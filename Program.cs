@@ -17,24 +17,28 @@ class Kendaraan
         }
     }
 
-    public bool LampuMerah;
+    public string StatusLampu;
 
     public Kendaraan(string nama, double kecepatan)
     {
         Nama = nama;
         Kecepatan = kecepatan;
-        LampuMerah = false;
+        StatusLampu = "hijau";
     }
 
     public virtual void Bergerak()
     {
-        if (LampuMerah)
+        if (StatusLampu == "merah")
         {
-            Console.WriteLine(Nama + " berhenti karena lampu merah.");
+            Console.WriteLine($"{Nama} berhenti karena lampu merah.");
+        }
+        else if (StatusLampu == "kuning")
+        {
+            Console.WriteLine($"{Nama} melambat karena lampu kuning, hati-hati...");
         }
         else
-        { 
-            Console.WriteLine(Nama + " bergerak dengan kecepatan " + Kecepatan + " km/h");
+        {
+            Console.WriteLine($"{Nama} bergerak dengan kecepatan {Kecepatan} km/h");
         }
     }
 }
@@ -50,13 +54,17 @@ class Mobil : Kendaraan
 
     public override void Bergerak()
     {
-        if (LampuMerah)
+        if (StatusLampu == "merah")
         {
-            Console.WriteLine("Mobil " + Nama + " (" + Warna + ") berhenti di lampu merah.");
+            Console.WriteLine($"Mobil {Nama} ({Warna}) berhenti di lampu merah.");
+        }
+        else if (StatusLampu == "kuning")
+        {
+            Console.WriteLine($"Mobil {Nama} ({Warna}) melambat, siap berhenti...");
         }
         else
-        { 
-            Console.WriteLine("Mobil " + Nama + " (" + Warna + ") melaju " + Kecepatan + " km/h");
+        {
+            Console.WriteLine($"Mobil {Nama} ({Warna}) melaju {Kecepatan} km/h");
         }
     }
 }
@@ -73,22 +81,26 @@ class Ambulans : Kendaraan
     public void NyalakanSirene()
     {
         SireneMenyala = true;
-        Console.WriteLine("Sirene " + Nama + " dinyalakan!");
+        Console.WriteLine($"Sirene {Nama} dinyalakan!");
     }
 
     public override void Bergerak()
     {
-        if (LampuMerah && SireneMenyala)
-        { 
-            Console.WriteLine("Ambulans " + Nama + " TETAP MELAJU meski lampu merah - sirene aktif!");
+        if (SireneMenyala)
+        {
+            Console.WriteLine($"Ambulans {Nama} TETAP MELAJU {Kecepatan} km/h - sirene aktif! (prioritas darurat)");
         }
-        else if (LampuMerah)
-        { 
-            Console.WriteLine("Ambulans " + Nama + " berhenti di lampu merah.");
+        else if (StatusLampu == "merah")
+        {
+            Console.WriteLine($"Ambulans {Nama} berhenti di lampu merah.");
+        }
+        else if (StatusLampu == "kuning")
+        {
+            Console.WriteLine($"Ambulans {Nama} melambat karena lampu kuning.");
         }
         else
         {
-            Console.WriteLine("Ambulans " + Nama + " melaju " + Kecepatan + " km/h");
+            Console.WriteLine($"Ambulans {Nama} melaju {Kecepatan} km/h");
         }
     }
 }
@@ -109,20 +121,40 @@ class Bus : Kendaraan
         }
     }
 
+    public int Penumpang;
+
     public Bus(string nama, double kecepatan, int kapasitas) : base(nama, kecepatan)
     {
         Kapasitas = kapasitas;
+        Penumpang = 0;
+    }
+
+    public void NaikPenumpang(int jumlah)
+    {
+        if (Penumpang + jumlah <= Kapasitas)
+        {
+            Penumpang += jumlah;
+            Console.WriteLine($"{jumlah} penumpang naik. Total: {Penumpang}/{Kapasitas}");
+        }
+        else
+        {
+            Console.WriteLine($"Bus penuh! Tidak bisa menampung {jumlah} penumpang lagi.");
+        }
     }
 
     public override void Bergerak()
     {
-        if (LampuMerah)
-        { 
-            Console.WriteLine("Bus " + Nama + " berhenti di lampu merah. Penumpang menunggu...");
+        if (StatusLampu == "merah")
+        {
+            Console.WriteLine($"Bus {Nama} berhenti, penumpang menunggu... ({Penumpang}/{Kapasitas})");
+        }
+        else if (StatusLampu == "kuning")
+        {
+            Console.WriteLine($"Bus {Nama} melambat karena lampu kuning ({Penumpang}/{Kapasitas} penumpang)");
         }
         else
-        { 
-            Console.WriteLine("Bus " + Nama + " berjalan " + Kecepatan + " km/h | Kapasitas: " + Kapasitas + " orang");
+        {
+            Console.WriteLine($"Bus {Nama} berjalan {Kecepatan} km/h ({Penumpang}/{Kapasitas} penumpang)");
         }
     }
 }
@@ -136,19 +168,32 @@ class Program
         Bus bus = new Bus("Bus Kota 1", 50, 40);
 
         ambulans.NyalakanSirene();
+        bus.NaikPenumpang(25);
+        bus.NaikPenumpang(20);
 
         Console.WriteLine("\n=== Lampu Hijau ===");
         mobil.Bergerak();
         ambulans.Bergerak();
         bus.Bergerak();
 
-        Console.WriteLine("\n=== Lampu Merah ===");
-        mobil.LampuMerah = true;
-        ambulans.LampuMerah = true;
-        bus.LampuMerah = true;
-
+        Console.WriteLine("\n=== Lampu Kuning ===");
+        mobil.StatusLampu = "kuning";
+        ambulans.StatusLampu = "kuning";
+        bus.StatusLampu = "kuning";
         mobil.Bergerak();
         ambulans.Bergerak();
         bus.Bergerak();
+
+        Console.WriteLine("\n=== Lampu Merah ===");
+        mobil.StatusLampu = "merah";
+        ambulans.StatusLampu = "merah";
+        bus.StatusLampu = "merah";
+        mobil.Bergerak();
+        ambulans.Bergerak();
+        bus.Bergerak();
+
+        Console.WriteLine("\n=== Demo Setter ===");
+        mobil.Kecepatan = -10;
+        bus.Kapasitas = 0;
     }
 }
